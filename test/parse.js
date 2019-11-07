@@ -467,6 +467,66 @@ test('parse', function (t) {
         type: 'text', content: 'else '
     }], 'should handle text nodes in the middle of tags at the top-level');
 
+    // simple path
+    html = `<svg height="210" width="400"><path d="M150 0 L75 200 L225 200 Z"/></svg>`
+    parsed = HTML.parse(html);
+    t.deepEqual(parsed, [{
+        type: 'tag',
+        name: 'svg',
+        attrs: {
+            height: '210',
+            width: '400'
+        },
+        voidElement: false,
+        children: [
+            {
+                type: 'tag',
+                name: 'path',
+                attrs: {
+                    d: 'M150 0 L75 200 L225 200 Z',
+                },
+                children: [],
+                voidElement: true
+            }
+        ]
+    }]);
+    t.equal(html, HTML.stringify(parsed));
+
+    // path with newlines
+    html = `<svg height="210" width="400">
+    <path class="st0" d="M60.56,147.78v-0.75c0-1.15-0.93-2.08-2.08-2.08H56.6c-1.15,0-2.08,0.93-2.08,2.08v0.75
+			c-1.49,0.99-2.44,2.69-2.44,4.54c0,3.01,2.45,5.45,5.45,5.45c3.01,0,5.45-2.45,5.45-5.45C63,150.47,62.05,148.77,60.56,147.78z
+			 M56.24,152.32c0-0.57,0.38-1.08,0.94-1.24c0.13-0.04,0.25-0.08,0.36-0.14c0.11,0.06,0.24,0.11,0.36,0.14
+			c0.55,0.16,0.94,0.67,0.94,1.24c0,0.72-0.58,1.3-1.3,1.3S56.24,153.03,56.24,152.32z"></path></svg>`;
+    html = `<svg height="210" width="400">
+    <path class="st0" d="M150 0 L75 200 L225 200 Z
+    M150 0 L75 200 L225 200 Z
+    M150 0 L75 200 L225 200 Z"></path></svg>`;
+    parsed = HTML.parse(html);
+    t.deepEqual(parsed, [{
+        type: 'tag',
+        name: 'svg',
+        attrs: {
+            height: '210',
+            width: '400'
+        },
+        voidElement: false,
+        children: [
+            { content: '\n    ', type: 'text' },
+            {
+                type: 'tag',
+                name: 'path',
+                attrs: {
+                    class: 'st0',
+                    d: 'M150 0 L75 200 L225 200 Z\n    M150 0 L75 200 L225 200 Z\n    M150 0 L75 200 L225 200 Z',
+                },
+                children: [],
+                voidElement: false
+            }
+        ]
+    }]);
+    t.equal(html, HTML.stringify(parsed));
+
     html = '<div>Hi</div>\n\n <span>There</span> \t ';
     parsed = HTML.parse(html);
     t.deepEqual(parsed, [{
